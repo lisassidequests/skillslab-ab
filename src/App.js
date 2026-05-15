@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MessageCircle, Download, Eye } from 'lucide-react';
+import { Search, Download, Eye } from 'lucide-react';
 
 // SKILLS DATA - 31 Singapore Government Skills
 const SKILLS_DATA = [
@@ -58,119 +58,8 @@ const mockLLMMatch = (prompt, limit = null) => {
   return limit ? matches.slice(0, limit) : matches;
 };
 
-// Feedback submission function
-const submitFeedback = async (feedback) => {
-  const formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfROdXJLc8KqVV2vfTg5f3xYRYzf5DlOLGu8M-Z3XdGhYvqpA/formResponse";
-  
-  const formData = new FormData();
-  formData.append("entry.1234567890", new Date().toISOString()); // Timestamp
-  formData.append("entry.2345678901", feedback.workflow); // Workflow
-  formData.append("entry.3456789012", feedback.screen); // Screen
-  formData.append("entry.4567890123", feedback.reaction); // Reaction
-  formData.append("entry.5678901234", feedback.comment); // Comment
-  
-  try {
-    await fetch(formUrl, {
-      method: "POST",
-      body: formData,
-      mode: "no-cors"
-    });
-    return true;
-  } catch (error) {
-    console.error("Feedback submission error:", error);
-    return false;
-  }
-};
-
-// Feedback Widget Component
-const FeedbackWidget = ({ workflow, screen }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [reaction, setReaction] = useState(null);
-  const [comment, setComment] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = async () => {
-    if (reaction) {
-      await submitFeedback({
-        workflow,
-        screen,
-        reaction,
-        comment
-      });
-      setSubmitted(true);
-      setTimeout(() => {
-        setIsOpen(false);
-        setSubmitted(false);
-        setReaction(null);
-        setComment('');
-      }, 2000);
-    }
-  };
-
-  return (
-    <div className="fixed bottom-6 right-6 z-50">
-      {isOpen && (
-        <div className="absolute bottom-16 right-0 bg-white rounded-lg shadow-xl p-4 w-80 border border-gray-200">
-          <div className="mb-4">
-            <h3 className="font-semibold text-gray-900 mb-2">How helpful was this?</h3>
-            <div className="flex gap-3 mb-4">
-              <button
-                onClick={() => setReaction('👍')}
-                className={`flex-1 py-2 rounded-lg font-semibold transition ${
-                  reaction === '👍'
-                    ? 'bg-emerald-100 text-emerald-700 border-2 border-emerald-400'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                👍 Helpful
-              </button>
-              <button
-                onClick={() => setReaction('👎')}
-                className={`flex-1 py-2 rounded-lg font-semibold transition ${
-                  reaction === '👎'
-                    ? 'bg-amber-100 text-amber-700 border-2 border-amber-400'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                👎 Not helpful
-              </button>
-            </div>
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Optional: Tell us more..."
-              className="w-full p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
-              rows="3"
-            />
-          </div>
-          {submitted ? (
-            <div className="text-center py-2 text-emerald-600 font-semibold">
-              ✓ Thank you for your feedback!
-            </div>
-          ) : (
-            <button
-              onClick={handleSubmit}
-              disabled={!reaction}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
-            >
-              Submit Feedback
-            </button>
-          )}
-        </div>
-      )}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 shadow-lg transition transform hover:scale-110"
-        title="Send feedback"
-      >
-        <MessageCircle size={24} />
-      </button>
-    </div>
-  );
-};
-
 // Workflow 1: Browse Library
-const WorkflowBrowse = ({ onFeedbackContext }) => {
+const WorkflowBrowse = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSkill, setSelectedSkill] = useState(null);
   const [selectedCategories, setSelectedCategories] = useState(new Set());
@@ -305,16 +194,13 @@ const WorkflowBrowse = ({ onFeedbackContext }) => {
             </div>
           </div>
 
-          {/* Skills Grid - Compact layout for more cards visible */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          {/* Skills Grid - Optimized for desktop */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             {filteredSkills.map(skill => (
               <div
                 key={skill.id}
                 className={`bg-white border-2 border-gray-200 rounded-lg p-3 hover:shadow-md hover:border-blue-400 transition cursor-pointer ${categoryBgColors[skill.category]}`}
-                onClick={() => {
-                  setSelectedSkill(skill);
-                  onFeedbackContext('browse', 'skill_card');
-                }}
+                onClick={() => setSelectedSkill(skill)}
               >
                 <div className={`inline-block px-2 py-0.5 rounded text-xs font-semibold mb-2 ${categoryColors[skill.category]}`}>
                   {skill.category.split(' & ')[0]}
@@ -350,18 +236,14 @@ const WorkflowBrowse = ({ onFeedbackContext }) => {
           )}
         </>
       ) : (
-        <SkillDetailModal
-          skill={selectedSkill}
-          onClose={() => setSelectedSkill(null)}
-          onFeedbackContext={() => onFeedbackContext('browse', 'detail_view')}
-        />
+        <SkillDetailModal skill={selectedSkill} onClose={() => setSelectedSkill(null)} />
       )}
     </div>
   );
 };
 
 // Workflow 2a: AI Curated Selection
-const WorkflowCurated = ({ onFeedbackContext }) => {
+const WorkflowCurated = () => {
   const [prompt, setPrompt] = useState('');
   const [results, setResults] = useState(null);
   const [selectedSkill, setSelectedSkill] = useState(null);
@@ -373,7 +255,6 @@ const WorkflowCurated = ({ onFeedbackContext }) => {
       setTimeout(() => {
         setResults(mockLLMMatch(prompt, 5));
         setIsLoading(false);
-        onFeedbackContext('curated', 'results');
       }, 500);
     }
   };
@@ -431,11 +312,7 @@ const WorkflowCurated = ({ onFeedbackContext }) => {
           </div>
         </div>
       ) : selectedSkill ? (
-        <SkillDetailModal
-          skill={selectedSkill}
-          onClose={() => setSelectedSkill(null)}
-          onFeedbackContext={() => onFeedbackContext('curated', 'detail_view')}
-        />
+        <SkillDetailModal skill={selectedSkill} onClose={() => setSelectedSkill(null)} />
       ) : (
         <div>
           <button
@@ -470,10 +347,7 @@ const WorkflowCurated = ({ onFeedbackContext }) => {
                   </div>
                 </div>
                 <button
-                  onClick={() => {
-                    setSelectedSkill(skill);
-                    onFeedbackContext('curated', 'detail_view');
-                  }}
+                  onClick={() => setSelectedSkill(skill)}
                   className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-2 mt-3"
                 >
                   <Eye size={16} /> View Details
@@ -488,7 +362,7 @@ const WorkflowCurated = ({ onFeedbackContext }) => {
 };
 
 // Workflow 2b: AI Filtered List
-const WorkflowFiltered = ({ onFeedbackContext }) => {
+const WorkflowFiltered = () => {
   const [prompt, setPrompt] = useState('');
   const [results, setResults] = useState(null);
   const [selectedSkills, setSelectedSkills] = useState(new Set());
@@ -502,7 +376,6 @@ const WorkflowFiltered = ({ onFeedbackContext }) => {
         setResults(mockLLMMatch(prompt));
         setSelectedSkills(new Set());
         setIsLoading(false);
-        onFeedbackContext('filtered', 'results');
       }, 500);
     }
   };
@@ -558,11 +431,7 @@ const WorkflowFiltered = ({ onFeedbackContext }) => {
           </div>
         </div>
       ) : selectedSkill ? (
-        <SkillDetailModal
-          skill={selectedSkill}
-          onClose={() => setSelectedSkill(null)}
-          onFeedbackContext={() => onFeedbackContext('filtered', 'detail_view')}
-        />
+        <SkillDetailModal skill={selectedSkill} onClose={() => setSelectedSkill(null)} />
       ) : (
         <div>
           <button
@@ -580,7 +449,7 @@ const WorkflowFiltered = ({ onFeedbackContext }) => {
               </h3>
 
               <div className="space-y-3">
-                {results.map((skill, idx) => (
+                {results.map((skill) => (
                   <div
                     key={skill.id}
                     className={`border-2 rounded-lg p-4 transition ${
@@ -598,17 +467,14 @@ const WorkflowFiltered = ({ onFeedbackContext }) => {
                       />
                       <div className="flex-1">
                         <h4 className="font-bold text-gray-900 mb-1">{skill.name}</h4>
-                        <div className={`inline-block px-2 py-0.5 rounded text-xs font-semibold mb-2 ${categoryColors[skill.category]}`}>
+                        <div className={`inline-block px-2 py-0.5 rounded text-xs font-semibold mb-2 bg-purple-100 text-purple-800`}>
                           {skill.category.split(' & ')[0]}
                         </div>
                         <p className="text-sm text-purple-700 font-semibold">
                           {Math.round((skill.matchScore / Math.max(...results.map(s => s.matchScore))) * 100)}% match
                         </p>
                         <button
-                          onClick={() => {
-                            setSelectedSkill(skill);
-                            onFeedbackContext('filtered', 'detail_view');
-                          }}
+                          onClick={() => setSelectedSkill(skill)}
                           className="text-purple-600 hover:text-purple-700 font-semibold text-sm mt-2 flex items-center gap-1"
                         >
                           <Eye size={14} /> View Details
@@ -646,7 +512,6 @@ const WorkflowFiltered = ({ onFeedbackContext }) => {
 
                     <button
                       onClick={() => {
-                        onFeedbackContext('filtered', 'download');
                         alert(`📥 Downloading ${selectedSkills.size} selected skills...`);
                       }}
                       className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
@@ -669,13 +534,7 @@ const WorkflowFiltered = ({ onFeedbackContext }) => {
 };
 
 // Skill Detail Modal
-const SkillDetailModal = ({ skill, onClose, onFeedbackContext }) => {
-  useEffect(() => {
-    if (onFeedbackContext) {
-      onFeedbackContext();
-    }
-  }, [onFeedbackContext]);
-
+const SkillDetailModal = ({ skill, onClose }) => {
   return (
     <div className="bg-white border-2 border-gray-300 rounded-xl p-6 md:p-8">
       <button
@@ -745,14 +604,6 @@ const SkillDetailModal = ({ skill, onClose, onFeedbackContext }) => {
 // Main App Component
 export default function SkillsLabApp() {
   const [activeWorkflow, setActiveWorkflow] = useState('workflow1');
-  const [feedbackContext, setFeedbackContext] = useState({ workflow: 'workflow1', screen: 'browse' });
-
-  const handleFeedbackContext = (workflow, screen) => {
-    setFeedbackContext({
-      workflow: workflow === 'curated' ? 'workflow2a' : workflow === 'filtered' ? 'workflow2b' : 'workflow1',
-      screen
-    });
-  };
 
   const workflowLabels = {
     workflow1: 'Browse Library',
@@ -796,19 +647,10 @@ export default function SkillsLabApp() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-12">
-        {activeWorkflow === 'workflow1' && (
-          <WorkflowBrowse onFeedbackContext={handleFeedbackContext} />
-        )}
-        {activeWorkflow === 'workflow2a' && (
-          <WorkflowCurated onFeedbackContext={handleFeedbackContext} />
-        )}
-        {activeWorkflow === 'workflow2b' && (
-          <WorkflowFiltered onFeedbackContext={handleFeedbackContext} />
-        )}
+        {activeWorkflow === 'workflow1' && <WorkflowBrowse />}
+        {activeWorkflow === 'workflow2a' && <WorkflowCurated />}
+        {activeWorkflow === 'workflow2b' && <WorkflowFiltered />}
       </main>
-
-      {/* Feedback Widget */}
-      <FeedbackWidget workflow={feedbackContext.workflow} screen={feedbackContext.screen} />
     </div>
   );
 }
