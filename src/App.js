@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Search, Download, Eye } from 'lucide-react';
 
 // SKILLS DATA - 31 Singapore Government Skills
@@ -388,18 +388,6 @@ const WorkflowFiltered = () => {
       newSelected.add(skillId);
     }
     setSelectedSkills(newSelected);
-  };
-
-  const categoryColors = {
-    "Administrative & Operations": "bg-blue-100 text-blue-800",
-    "Data & Intelligence": "bg-purple-100 text-purple-800",
-    "Communication & Engagement": "bg-green-100 text-green-800",
-    "Case Management & Social Work": "bg-pink-100 text-pink-800",
-    "Compliance & Governance": "bg-orange-100 text-orange-800",
-    "Content & Documentation": "bg-cyan-100 text-cyan-800",
-    "Citizen-Facing Service": "bg-teal-100 text-teal-800",
-    "Intelligence & Research": "bg-indigo-100 text-indigo-800",
-    "Scheduling & Coordination": "bg-amber-100 text-amber-800"
   };
 
   return (
