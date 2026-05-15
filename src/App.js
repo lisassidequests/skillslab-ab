@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ChevronDown, Search, X, ThumbsUp, ThumbsDown, MessageCircle, Download, Eye, Send } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, MessageCircle, Download, Eye } from 'lucide-react';
 
 // SKILLS DATA - 31 Singapore Government Skills
 const SKILLS_DATA = [
@@ -91,7 +91,7 @@ const FeedbackWidget = ({ workflow, screen }) => {
 
   const handleSubmit = async () => {
     if (reaction) {
-      const success = await submitFeedback({
+      await submitFeedback({
         workflow,
         screen,
         reaction,
@@ -671,8 +671,10 @@ const WorkflowFiltered = ({ onFeedbackContext }) => {
 // Skill Detail Modal
 const SkillDetailModal = ({ skill, onClose, onFeedbackContext }) => {
   useEffect(() => {
-    onFeedbackContext && onFeedbackContext();
-  }, []);
+    if (onFeedbackContext) {
+      onFeedbackContext();
+    }
+  }, [onFeedbackContext]);
 
   return (
     <div className="bg-white border-2 border-gray-300 rounded-xl p-6 md:p-8">
